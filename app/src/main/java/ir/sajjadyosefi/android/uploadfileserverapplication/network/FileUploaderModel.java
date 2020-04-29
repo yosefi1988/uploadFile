@@ -15,14 +15,12 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
 
 public class FileUploaderModel implements FileUploaderContract.Model {
-    private final FileUploadService service;
+    private final IFileUploadApiService service;
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
-    public FileUploaderModel(FileUploadService service) {
+    public FileUploaderModel(IFileUploadApiService service) {
         this.service = service;
     }
 

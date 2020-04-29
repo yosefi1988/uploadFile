@@ -15,13 +15,17 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import ir.sajjadyosefi.android.uploadfileserverapplication.network.FileUploaderModel;
+import ir.sajjadyosefi.android.uploadfileserverapplication.network.CountingRequestBody;
+import ir.sajjadyosefi.android.uploadfileserverapplication.network.IFileUploadApiService;
 import ir.sajjadyosefi.android.uploadfileserverapplication.network.ServiceGenerator;
 import ir.sajjadyosefi.android.uploadfileserverapplication.utils.MIMEType;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
 
 public class FileUploadService extends JobIntentService {
@@ -54,19 +58,44 @@ public class FileUploadService extends JobIntentService {
             Log.e(TAG, "onHandleWork: Invalid file URI");
             return;
         }
-        ir.sajjadyosefi.android.uploadfileserverapplication.network.FileUploadService apiService = ServiceGenerator.createService();
+        IFileUploadApiService apiService = ServiceGenerator.createService();
 
         Flowable<Double> fileObservable = Flowable.create(emitter -> {
-            apiService.onFileUpload(createRequestBodyFromText("info@androidwave.com"),
-                    createMultipartBody(mFilePath, emitter)).blockingGet();
 
 
+            Map<String, RequestBody> map = new HashMap<>();
+            map.put("UserId", toRequestBody("userId000000000"));
+            map.put("Type", toRequestBody("type0000000000"));
+
+            if (mFilePath != null) {
+                File file = new File(mFilePath);
+                RequestBody fileBody = RequestBody.create(MediaType.parse("image/png"), file);
+                map.put("avatar\"; filename=\"" + file.getName() + "\"", fileBody);
+            }
+
+
+
+
+            //fistCode
+//            apiService.onFileUploadInService(
+//                    toRequestBody("info@androidwave.com"),
+//                    createMultipartBody(mFilePath, emitter))
+//                    .blockingGet();
+//            emitter.onComplete();
+
+
+            //newCode
+            ResponseBody response = apiService.onFileUploadInService2(map).blockingGet();
             emitter.onComplete();
+
+
         }, BackpressureStrategy.LATEST);
 
         mDisposable = fileObservable.subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(progress -> onProgress(progress), throwable -> onErrors(throwable),
+                .subscribe(
+                        progress -> onProgress(progress),
+                        throwable -> onErrors(throwable),
                         () -> onSuccess());
     }
 
@@ -95,9 +124,7 @@ public class FileUploadService extends JobIntentService {
         return RequestBody.create(MediaType.parse(mimeType), file);
     }
 
-    private RequestBody createRequestBodyFromText(String mText) {
-        return RequestBody.create(MediaType.parse("text/plain"), mText);
-    }
+
 
     /**
      * return multi part body in format of FlowableEmitter
@@ -108,12 +135,22 @@ public class FileUploadService extends JobIntentService {
                 createCountingRequestBody(file, MIMEType.IMAGE.value, emitter));
     }
 
-    private RequestBody createCountingRequestBody(File file, String mimeType,
-                                                  FlowableEmitter<Double> emitter) {
+    private RequestBody createCountingRequestBody(File file, String mimeType,FlowableEmitter<Double> emitter) {
         RequestBody requestBody = createRequestBodyFromFile(file, mimeType);
         return new CountingRequestBody(requestBody, (bytesWritten, contentLength) -> {
             double progress = (1.0 * bytesWritten) / contentLength;
             emitter.onNext(progress);
         });
+    }
+
+
+
+
+
+    private RequestBody toRequestBody(String mText) {
+        return RequestBody.create(MediaType.parse("text/plain"), mText);
+        //or
+//        RequestBody body = RequestBody.create(MediaType.parse("text/plain"), value);
+//        return body ;
     }
 }

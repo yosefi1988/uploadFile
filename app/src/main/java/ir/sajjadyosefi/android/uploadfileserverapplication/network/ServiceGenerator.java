@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceGenerator {
 
-    public static FileUploadService createService() {
+    public static IFileUploadApiService createService() {
         OkHttpClient client = new OkHttpClient.Builder()
                 .readTimeout(2, TimeUnit.MINUTES)
                 .writeTimeout(2, TimeUnit.MINUTES).addInterceptor(chain -> {
@@ -28,7 +28,7 @@ public class ServiceGenerator {
                 .client(client)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
-                .create(FileUploadService.class);
+                .create(IFileUploadApiService.class);
     }
 
 

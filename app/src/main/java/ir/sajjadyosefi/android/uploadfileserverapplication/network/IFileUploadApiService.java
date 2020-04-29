@@ -16,7 +16,8 @@ import retrofit2.http.PartMap;
  * Author     : AndroidWave
  * Website    : https://androidwave.com/
  */
-public interface FileUploadService {
+public interface IFileUploadApiService {
+    //profile
     @Multipart
     @POST("UserAvatarProfileImage")
     Single<ResponseBody> onFileUpload(
@@ -32,9 +33,17 @@ public interface FileUploadService {
 
 
     //multifile upload
+//    @Multipart
+//    @POST("fileUpload.php")
+//    Single<ResponseBody> onFileUploadInService(@Part("email") RequestBody mEmail,
+//                                      @Part MultipartBody.Part file);
+
     @Multipart
-    @POST("fileUpload.php")
-    Single<ResponseBody> onFileUpload(@Part("email") RequestBody mEmail,
+    @POST("UserAvatarProfileImage")
+    Single<ResponseBody> onFileUploadInService(@Part("email") RequestBody mEmail,
                                       @Part MultipartBody.Part file);
+    @Multipart
+    @POST("UserAvatarProfileImage")
+    Single<ResponseBody> onFileUploadInService2(@PartMap Map<String, RequestBody> params);
 
 }
